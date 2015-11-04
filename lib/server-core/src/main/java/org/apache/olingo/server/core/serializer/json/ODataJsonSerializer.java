@@ -58,6 +58,10 @@ import org.apache.olingo.server.api.serializer.ReferenceSerializerOptions;
 import org.apache.olingo.server.api.serializer.SerializerException;
 import org.apache.olingo.server.api.serializer.SerializerResult;
 import org.apache.olingo.server.api.uri.UriHelper;
+import org.apache.olingo.server.api.uri.UriInfoResource;
+import org.apache.olingo.server.api.uri.UriResource;
+import org.apache.olingo.server.api.uri.UriResourceCount;
+import org.apache.olingo.server.api.uri.UriResourceNavigation;
 import org.apache.olingo.server.api.uri.queryoption.ExpandItem;
 import org.apache.olingo.server.api.uri.queryoption.ExpandOption;
 import org.apache.olingo.server.api.uri.queryoption.SelectOption;
@@ -335,28 +339,58 @@ public class ODataJsonSerializer extends AbstractODataSerializer {
     }
   }
 
-  protected void writeNavigationProperties(final ServiceMetadata metadata,
-      final EdmStructuredType type, final Linked linked, final ExpandOption expand,
-      final JsonGenerator json) throws SerializerException, IOException {
+  protected void writeNavigationProperties(final ServiceMetadata metadata, final EdmStructuredType type,
+                                           final Linked linked, final ExpandOption expand, final JsonGenerator json)
+          throws SerializerException, IOException {
     if (ExpandSelectHelper.hasExpand(expand)) {
       final boolean expandAll = ExpandSelectHelper.isExpandAll(expand);
-      final Set<String> expanded = expandAll ? new HashSet<String>() :
-          ExpandSelectHelper.getExpandedPropertyNames(expand.getExpandItems());
+      final Set<String> expanded = expandAll ? new HashSet<String>()
+              : ExpandSelectHelper.getExpandedPropertyNames(expand.getExpandItems());
       for (final String propertyName : type.getNavigationPropertyNames()) {
         if (expandAll || expanded.contains(propertyName)) {
           final EdmNavigationProperty property = type.getNavigationProperty(propertyName);
           final Link navigationLink = linked.getNavigationLink(property.getName());
-          final ExpandItem innerOptions = expandAll ? null :
-              ExpandSelectHelper.getExpandItem(expand.getExpandItems(), propertyName);
+          final ExpandItem innerOptions = expandAll ? null
+                  : ExpandSelectHelper.getExpandItem(expand.getExpandItems(), propertyName);
           if (innerOptions != null && innerOptions.getLevelsOption() != null) {
             throw new SerializerException("Expand option $levels is not supported.",
-                SerializerException.MessageKeys.NOT_IMPLEMENTED);
+                    SerializerException.MessageKeys.NOT_IMPLEMENTED);
           }
-          writeExpandedNavigationProperty(metadata, property, navigationLink,
-              innerOptions == null ? null : innerOptions.getExpandOption(),
-              innerOptions == null ? null : innerOptions.getSelectOption(), json);
+
+          boolean isNavigationPropertyCountOnly = false;
+          if (innerOptions != null) {
+            final UriInfoResource uriInfoResource = innerOptions.getResourcePath();
+            final List<UriResource> uriResourceParts = uriInfoResource.getUriResourceParts();
+            if (uriResourceParts.size() == 2 && uriResourceParts.get(0) instanceof UriResourceNavigation
+                    && uriResourceParts.get(1) instanceof UriResourceCount) {
+              isNavigationPropertyCountOnly = true;
+            }
+          }
+
+          if (isNavigationPropertyCountOnly) {
+            writeNavigationPropertyCount(property, navigationLink.getInlineEntitySet().getCount(), json);
+          } else {
+            if (innerOptions != null && innerOptions.getCountOption() != null
+                    && innerOptions.getCountOption().getValue()) {
+              writeNavigationPropertyCount(property, navigationLink.getInlineEntitySet().getCount(), json);
+            }
+
+            writeExpandedNavigationProperty(metadata, property, navigationLink,
+                    innerOptions == null ? null : innerOptions.getExpandOption(),
+                    innerOptions == null ? null : innerOptions.getSelectOption(), json);
+          }
         }
       }
+    }
+  }
+
+
+  private void writeNavigationPropertyCount(final EdmNavigationProperty property, final int count,
+                                            final JsonGenerator json) throws IOException {
+    if (isIEEE754Compatible) {
+      json.writeStringField(property.getName() + Constants.JSON_COUNT, String.valueOf(count));
+    } else {
+      json.writeNumberField(property.getName() + Constants.JSON_COUNT, count);
     }
   }
 

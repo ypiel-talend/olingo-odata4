@@ -30,8 +30,10 @@ import org.apache.olingo.commons.api.edm.EdmStructuredType;
 import org.apache.olingo.commons.api.edm.constants.EdmTypeKind;
 import org.apache.olingo.server.api.uri.UriInfoResource;
 import org.apache.olingo.server.api.uri.UriResource;
+import org.apache.olingo.server.api.uri.UriResourceCount;
 import org.apache.olingo.server.api.uri.UriResourceNavigation;
 import org.apache.olingo.server.api.uri.UriResourceProperty;
+import org.apache.olingo.server.api.uri.queryoption.CountOption;
 import org.apache.olingo.server.api.uri.queryoption.ExpandItem;
 import org.apache.olingo.server.api.uri.queryoption.ExpandOption;
 import org.apache.olingo.server.api.uri.queryoption.SelectItem;
@@ -62,6 +64,22 @@ public final class ExpandSelectMock {
     return resource;
   }
 
+  public static UriInfoResource mockResourceWithCountOnNavigation(
+          final EdmEntitySet edmEntitySet, final String navigationName) {
+
+    EdmStructuredType type = edmEntitySet.getEntityType();
+    List<UriResource> elements = new ArrayList<UriResource>();
+    final EdmElement edmElement = type.getProperty(navigationName);
+    UriResourceNavigation element = Mockito.mock(UriResourceNavigation.class);
+    Mockito.when(element.getProperty()).thenReturn((EdmNavigationProperty) edmElement);
+    elements.add(element);
+    UriResourceCount countResource = Mockito.mock(UriResourceCount.class);
+    elements.add(countResource);
+    UriInfoResource resource = Mockito.mock(UriInfoResource.class);
+    Mockito.when(resource.getUriResourceParts()).thenReturn(elements);
+    return resource;
+  }
+
   public static SelectItem mockSelectItem(final EdmEntitySet edmEntitySet, final String... names) {
     final UriInfoResource resource = mockResource(edmEntitySet, names);
     SelectItem selectItem = Mockito.mock(SelectItem.class);
@@ -76,9 +94,17 @@ public final class ExpandSelectMock {
   }
 
   public static ExpandItem mockExpandItem(final EdmEntitySet edmEntitySet, final String... names) {
+    return mockExpandItem(edmEntitySet, false, names);
+  }
+
+  public static ExpandItem mockExpandItem(final EdmEntitySet edmEntitySet, final boolean inlineCount,
+                                          final String... names) {
     final UriInfoResource resource = mockResource(edmEntitySet, names);
     ExpandItem expandItem = Mockito.mock(ExpandItem.class);
     Mockito.when(expandItem.getResourcePath()).thenReturn(resource);
+    CountOption countOption = Mockito.mock(CountOption.class);
+    Mockito.when(countOption.getValue()).thenReturn(inlineCount);
+    Mockito.when(expandItem.getCountOption()).thenReturn(countOption);
     return expandItem;
   }
 

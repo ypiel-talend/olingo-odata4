@@ -50,6 +50,9 @@ public class EntityCollection extends AbstractODataObject {
    * @return number of entries into the entity set.
    */
   public Integer getCount() {
+    if(count == null) {
+      return entities.size();
+    }
     return count;
   }
 

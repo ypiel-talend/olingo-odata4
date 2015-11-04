@@ -51,6 +51,7 @@ import org.apache.olingo.server.api.serializer.ReferenceSerializerOptions;
 import org.apache.olingo.server.api.serializer.SerializerException;
 import org.apache.olingo.server.api.serializer.SerializerResult;
 import org.apache.olingo.server.api.uri.UriHelper;
+import org.apache.olingo.server.api.uri.UriInfoResource;
 import org.apache.olingo.server.api.uri.queryoption.CountOption;
 import org.apache.olingo.server.api.uri.queryoption.ExpandItem;
 import org.apache.olingo.server.api.uri.queryoption.ExpandOption;
@@ -691,6 +692,104 @@ public class ODataJsonSerializerTest {
         + "{\"PropertyInt16\":32767,\"PropertyString\":\"Test String4\"}]}]}",
         resultString);
   }
+
+  /**
+   * <code>ESAllPrim$expand=NavPropertyETTwoPrimMany($count)</code>
+   */
+  @Test
+  public void expandWithInlineOption() throws Exception {
+    final EdmEntitySet edmEntitySet = entityContainer.getEntitySet("ESAllPrim");
+    final Entity entity = data.readAll(edmEntitySet).getEntities().get(2);
+    final ExpandOption expand = ExpandSelectMock.mockExpandOption(Collections.singletonList(
+            ExpandSelectMock.mockExpandItem(edmEntitySet, true, "NavPropertyETTwoPrimMany")));
+
+    InputStream result = serializer.entity(metadata, edmEntitySet.getEntityType(), entity,
+            EntitySerializerOptions.with()
+                    .contextURL(ContextURL.with().entitySet(edmEntitySet).suffix(Suffix.ENTITY).build())
+                    .expand(expand)
+                    .build()).getContent();
+
+    final String resultString = IOUtils.toString(result);
+    final String expected = "{" +
+            "\"@odata.context\":\"$metadata#ESAllPrim/$entity\"," +
+            "\"@odata.metadataEtag\":\"W/\\\"metadataETag\\\"\"," +
+            "\"PropertyInt16\":0," +
+            "\"PropertyString\":\"\"," +
+            "\"PropertyBoolean\":false," +
+            "\"PropertyByte\":0," +
+            "\"PropertySByte\":0," +
+            "\"PropertyInt32\":0," +
+            "\"PropertyInt64\":0," +
+            "\"PropertySingle\":0.0," +
+            "\"PropertyDouble\":0.0," +
+            "\"PropertyDecimal\":0," +
+            "\"PropertyBinary\":\"\"," +
+            "\"PropertyDate\":\"1970-01-01\"," +
+            "\"PropertyDateTimeOffset\":\"2005-12-03T00:00:00Z\"," +
+            "\"PropertyDuration\":\"PT0S\"," +
+            "\"PropertyGuid\":\"76543201-23ab-cdef-0123-456789cccddd\"," +
+            "\"PropertyTimeOfDay\":\"00:01:01\"," +
+            "\"NavPropertyETTwoPrimMany@odata.count\":3," +
+            "\"NavPropertyETTwoPrimMany\":[" +
+            "{" +
+            "\"PropertyInt16\":32766," +
+            "\"PropertyString\":\"Test String1\"" +
+            "},{" +
+            "\"PropertyInt16\":-32766," +
+            "\"PropertyString\":null" +
+            "},{" +
+            "\"PropertyInt16\":32767," +
+            "\"PropertyString\":\"Test String4\"" +
+            "}]}";
+    Assert.assertEquals(expected, resultString);
+  }
+
+  /**
+   * <code>ESAllPrim$expand=NavPropertyETTwoPrimMany/$count</code>
+   */
+  @Test
+  public void expandWithCountUri() throws Exception {
+    final EdmEntitySet edmEntitySet = entityContainer.getEntitySet("ESAllPrim");
+    final Entity entity = data.readAll(edmEntitySet).getEntities().get(2);
+
+    String navName = "NavPropertyETTwoPrimMany";
+    final UriInfoResource resource = ExpandSelectMock.mockResourceWithCountOnNavigation(edmEntitySet, navName);
+    ExpandItem expandItem = Mockito.mock(ExpandItem.class);
+    Mockito.when(expandItem.getResourcePath()).thenReturn(resource);
+
+    final ExpandOption expand = ExpandSelectMock.mockExpandOption(Collections.singletonList(expandItem));
+
+    InputStream result = serializer.entity(metadata, edmEntitySet.getEntityType(), entity,
+            EntitySerializerOptions.with()
+                    .contextURL(ContextURL.with().entitySet(edmEntitySet).suffix(Suffix.ENTITY).build())
+                    .expand(expand)
+                    .build()).getContent();
+
+    final String resultString = IOUtils.toString(result);
+    final String expected = "{" +
+            "\"@odata.context\":\"$metadata#ESAllPrim/$entity\"," +
+            "\"@odata.metadataEtag\":\"W/\\\"metadataETag\\\"\"," +
+            "\"PropertyInt16\":0," +
+            "\"PropertyString\":\"\"," +
+            "\"PropertyBoolean\":false," +
+            "\"PropertyByte\":0," +
+            "\"PropertySByte\":0," +
+            "\"PropertyInt32\":0," +
+            "\"PropertyInt64\":0," +
+            "\"PropertySingle\":0.0," +
+            "\"PropertyDouble\":0.0," +
+            "\"PropertyDecimal\":0," +
+            "\"PropertyBinary\":\"\"," +
+            "\"PropertyDate\":\"1970-01-01\"," +
+            "\"PropertyDateTimeOffset\":\"2005-12-03T00:00:00Z\"," +
+            "\"PropertyDuration\":\"PT0S\"," +
+            "\"PropertyGuid\":\"76543201-23ab-cdef-0123-456789cccddd\"," +
+            "\"PropertyTimeOfDay\":\"00:01:01\"," +
+            "\"NavPropertyETTwoPrimMany@odata.count\":3" +
+            "}";
+    Assert.assertEquals(expected, resultString);
+  }
+
 
   @Test
   public void primitiveProperty() throws Exception {
