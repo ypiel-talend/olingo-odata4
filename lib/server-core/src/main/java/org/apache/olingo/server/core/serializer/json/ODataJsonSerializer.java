@@ -357,22 +357,12 @@ public class ODataJsonSerializer extends AbstractODataSerializer {
                     SerializerException.MessageKeys.NOT_IMPLEMENTED);
           }
 
-          boolean isNavigationPropertyCountOnly = false;
-          if (innerOptions != null) {
-            final UriInfoResource uriInfoResource = innerOptions.getResourcePath();
-            final List<UriResource> uriResourceParts = uriInfoResource.getUriResourceParts();
-            if (uriResourceParts.size() == 2 && uriResourceParts.get(0) instanceof UriResourceNavigation
-                    && uriResourceParts.get(1) instanceof UriResourceCount) {
-              isNavigationPropertyCountOnly = true;
-            }
-          }
-
-          if (isNavigationPropertyCountOnly) {
-            writeNavigationPropertyCount(property, navigationLink.getInlineEntitySet().getCount(), json);
+          if (property.isCollection() && isNavigationPropertyCountOnly(innerOptions)) {
+            writeNavigationPropertyCount(property, getCount(navigationLink), json);
           } else {
-            if (innerOptions != null && innerOptions.getCountOption() != null
-                    && innerOptions.getCountOption().getValue()) {
-              writeNavigationPropertyCount(property, navigationLink.getInlineEntitySet().getCount(), json);
+            if (property.isCollection() && innerOptions != null
+                && innerOptions.getCountOption() != null && innerOptions.getCountOption().getValue()) {
+              writeNavigationPropertyCount(property, getCount(navigationLink), json);
             }
 
             writeExpandedNavigationProperty(metadata, property, navigationLink,
@@ -382,6 +372,26 @@ public class ODataJsonSerializer extends AbstractODataSerializer {
         }
       }
     }
+  }
+
+  private Integer getCount(Link navigationLink) {
+    if(navigationLink.getInlineEntitySet() == null) {
+      return 0;
+    }
+    return navigationLink.getInlineEntitySet().getCount();
+  }
+
+  private boolean isNavigationPropertyCountOnly(ExpandItem innerOptions) {
+    if (innerOptions != null) {
+      final UriInfoResource uriInfoResource = innerOptions.getResourcePath();
+      final List<UriResource> uriResourceParts = uriInfoResource.getUriResourceParts();
+      if (uriResourceParts.size() == 2
+          && uriResourceParts.get(0) instanceof UriResourceNavigation
+          && uriResourceParts.get(1) instanceof UriResourceCount) {
+        return true;
+      }
+    }
+    return false;
   }
 
 

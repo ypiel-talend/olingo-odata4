@@ -20,6 +20,7 @@ under the License.
 <feed xmlns:m="http://docs.oasis-open.org/odata/ns/metadata" 
       m:context="http://odatae2etest.azurewebsites.net/javatest/DefaultService/$metadata#Collection($ref)" 
       xmlns="http://www.w3.org/2005/Atom">
+  <m:count>1</m:count>
   <m:ref id="http://odatae2etest.azurewebsites.net/javatest/DefaultService/OrderDetails(OrderID=7,ProductID=5)"/>
   <m:ref id="http://odatae2etest.azurewebsites.net/javatest/DefaultService/OrderDetails(OrderID=7,ProductID=6)"/>
 </feed>

@@ -62,6 +62,11 @@ import org.apache.olingo.server.api.serializer.ReferenceCollectionSerializerOpti
 import org.apache.olingo.server.api.serializer.ReferenceSerializerOptions;
 import org.apache.olingo.server.api.serializer.SerializerException;
 import org.apache.olingo.server.api.serializer.SerializerResult;
+import org.apache.olingo.server.api.uri.UriInfoResource;
+import org.apache.olingo.server.api.uri.UriResource;
+import org.apache.olingo.server.api.uri.UriResourceCount;
+import org.apache.olingo.server.api.uri.UriResourceNavigation;
+import org.apache.olingo.server.api.uri.queryoption.CountOption;
 import org.apache.olingo.server.api.uri.queryoption.ExpandItem;
 import org.apache.olingo.server.api.uri.queryoption.ExpandOption;
 import org.apache.olingo.server.api.uri.queryoption.SelectOption;
@@ -528,6 +533,8 @@ public class ODataXmlSerializer extends AbstractODataSerializer {
             writeExpandedNavigationProperty(metadata, property, navigationLink,
                 innerOptions == null ? null : innerOptions.getExpandOption(),
                 innerOptions == null ? null : innerOptions.getSelectOption(),
+                innerOptions == null ? null : innerOptions.getCountOption(),
+                isNavigationPropertyCountOnly(innerOptions),
                 writer);
             writer.writeEndElement();
             writer.writeEndElement();
@@ -544,6 +551,19 @@ public class ODataXmlSerializer extends AbstractODataSerializer {
     for (Link link : linked.getAssociationLinks()) {
       writeLink(writer, link);
     }
+  }
+
+  private boolean isNavigationPropertyCountOnly(ExpandItem innerOptions) {
+    if (innerOptions != null) {
+      final UriInfoResource uriInfoResource = innerOptions.getResourcePath();
+      final List<UriResource> uriResourceParts = uriInfoResource.getUriResourceParts();
+      if (uriResourceParts.size() == 2
+          && uriResourceParts.get(0) instanceof UriResourceNavigation
+          && uriResourceParts.get(1) instanceof UriResourceCount) {
+        return true;
+      }
+    }
+    return false;
   }
 
   protected Link getOrCreateLink(final Linked linked, final String navigationPropertyName)
@@ -587,13 +607,25 @@ public class ODataXmlSerializer extends AbstractODataSerializer {
 
   protected void writeExpandedNavigationProperty(final ServiceMetadata metadata,
       final EdmNavigationProperty property, final Link navigationLink,
-      final ExpandOption innerExpand, final SelectOption innerSelect, final XMLStreamWriter writer)
+      final ExpandOption innerExpand, final SelectOption innerSelect, 
+      final CountOption innerCount, boolean isNavigationPropertyCountOnly, 
+      final XMLStreamWriter writer)
       throws XMLStreamException, SerializerException {
     if (property.isCollection()) {
       if (navigationLink != null && navigationLink.getInlineEntitySet() != null) {
         writer.writeStartElement(ATOM, Constants.ATOM_ELEM_FEED, NS_ATOM);
-        writeEntitySet(metadata, property.getType(), navigationLink.getInlineEntitySet(), innerExpand,
-            innerSelect, writer);
+        
+        if (isNavigationPropertyCountOnly) {
+            writeCount(navigationLink.getInlineEntitySet(), writer);
+        } else {
+            if (innerCount != null && innerCount.getValue()
+                          && navigationLink.getInlineEntitySet().getCount() != null) {
+                   writeCount(navigationLink.getInlineEntitySet(), writer);
+            }
+            writeEntitySet(metadata, property.getType(), navigationLink.getInlineEntitySet(), innerExpand,
+                          innerSelect, writer);
+     }
+        
         writer.writeEndElement();
       }
     } else {

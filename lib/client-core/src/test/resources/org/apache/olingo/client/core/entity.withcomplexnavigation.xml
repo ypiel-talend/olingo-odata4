@@ -34,7 +34,7 @@ under the License.
   <link rel="http://docs.oasis-open.org/odata/ns/related/Orders"
         type="application/atom+xml;type=feed"
         title="Orders">
-        <m:inline><feed><m:ref id="Customers('ALFKI')/Orders"/></feed></m:inline> </link>        
+        <m:inline><feed><m:count>1</m:count><m:ref id="Customers('ALFKI')/Orders"/></feed></m:inline> </link>
   <link rel="http://docs.oasis-open.org/odata/ns/related/Supplier"
         type="application/atom+xml;type=entry"
         title="Supplier" href="Customers('ALFKI')/Supplier"/>

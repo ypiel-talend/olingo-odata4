@@ -37,7 +37,7 @@
     <link rel="http://docs.oasis-open.org/odata/ns/related/Parent" type="application/atom+xml;type=entry" title="Parent" href="http://odatae2etest.azurewebsites.net/javatest/DefaultService/Customers(PersonID=1)/Parent"/>
     <link rel="http://docs.oasis-open.org/odata/ns/related/Orders"
 	   type="application/atom+xml;type=feed" title="Orders">
-	   <m:inline><feed><m:ref id="http://odatae2etest.azurewebsites.net/javatest/DefaultService/Customers(PersonID=1)/Orders"/></feed></m:inline></link>
+	   <m:inline><feed><m:count>1</m:count><m:ref id="http://odatae2etest.azurewebsites.net/javatest/DefaultService/Customers(PersonID=1)/Orders"/></feed></m:inline></link>
     <link rel="http://docs.oasis-open.org/odata/ns/related/Company" type="application/atom+xml;type=entry" title="Company" href="http://odatae2etest.azurewebsites.net/javatest/DefaultService/Customers(PersonID=1)/Company"/>
     <title/>
     <updated>2014-03-31T09:35:14Z</updated>
@@ -80,7 +80,7 @@
     <link rel="http://docs.oasis-open.org/odata/ns/related/Parent" type="application/atom+xml;type=entry" title="Parent" href="http://odatae2etest.azurewebsites.net/javatest/DefaultService/Customers(PersonID=2)/Parent"/>
     <link rel="http://docs.oasis-open.org/odata/ns/related/Orders" type="application/atom+xml;type=feed" 
       title="Orders">
-      <m:inline><feed><m:ref id="http://odatae2etest.azurewebsites.net/javatest/DefaultService/Customers(PersonID=2)/Orders"/></feed></m:inline>
+      <m:inline><feed><m:count>1</m:count><m:ref id="http://odatae2etest.azurewebsites.net/javatest/DefaultService/Customers(PersonID=2)/Orders"/></feed></m:inline>
       </link>
     <link rel="http://docs.oasis-open.org/odata/ns/related/Company" type="application/atom+xml;type=entry" title="Company" href="http://odatae2etest.azurewebsites.net/javatest/DefaultService/Customers(PersonID=2)/Company"/>
     <title/>
