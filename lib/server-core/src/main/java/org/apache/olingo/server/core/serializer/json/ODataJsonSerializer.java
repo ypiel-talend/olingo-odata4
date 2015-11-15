@@ -435,7 +435,12 @@ public class ODataJsonSerializer extends AbstractODataSerializer {
         throw new SerializerException("Non-nullable property not present!",
             SerializerException.MessageKeys.MISSING_PROPERTY, edmProperty.getName());
       } else {
-        json.writeNull();
+        if(edmProperty.isCollection()){
+          json.writeStartArray();
+          json.writeEndArray();
+        }else {
+          json.writeNull();
+        }
       }
     } else {
       writePropertyValue(edmProperty, property, selectedPaths, json);
