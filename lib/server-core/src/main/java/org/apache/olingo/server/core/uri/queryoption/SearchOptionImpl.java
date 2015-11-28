@@ -24,13 +24,18 @@ import org.apache.olingo.server.api.uri.queryoption.search.SearchExpression;
 
 public class SearchOptionImpl extends SystemQueryOptionImpl implements SearchOption {
 
+  private SearchExpression searchExpression;
+
   public SearchOptionImpl() {
     setKind(SystemQueryOptionKind.SEARCH);
   }
 
   @Override
   public SearchExpression getSearchExpression() {
-    return null;
+    return searchExpression;
   }
 
+  public void setSearchExpression(SearchExpression searchExpression) {
+    this.searchExpression = searchExpression;
+  }
 }

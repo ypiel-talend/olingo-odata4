@@ -483,7 +483,9 @@ public class UriParseTreeVisitor extends UriParserBaseVisitor<Object> {
       }
 
       if (property instanceof EdmProperty) {
-        if (((EdmProperty) property).isPrimitive()) {
+        if (((EdmProperty) property).isPrimitive()
+            || property.getType().getKind() == EdmTypeKind.ENUM
+            || property.getType().getKind() == EdmTypeKind.DEFINITION) {
           // create simple property
           UriResourcePrimitivePropertyImpl simpleResource = new UriResourcePrimitivePropertyImpl()
               .setProperty((EdmProperty) property);
@@ -1046,6 +1048,11 @@ public class UriParseTreeVisitor extends UriParserBaseVisitor<Object> {
       return type;
     }
 
+    type = edm.getTypeDefinition(fullName);
+    if (type != null) {
+      return type;
+    }
+
     type = edm.getEnumType(fullName);
     if (type != null) {
       return type;
@@ -1466,11 +1473,10 @@ public class UriParseTreeVisitor extends UriParserBaseVisitor<Object> {
 
   @Override
   public Object visitInlinecount(final InlinecountContext ctx) {
-    CountOptionImpl inlineCount = new CountOptionImpl();
-
-    String text = ctx.children.get(2).getText();
-
-    return inlineCount.setValue(text.toLowerCase().equals("true") ? true : false).setText(text);
+    final String text = ctx.children.get(2).getText();
+    return new CountOptionImpl()
+        .setValue(text.equalsIgnoreCase("true") ? true : false)
+        .setText(text);
   }
 
   @Override
@@ -1693,7 +1699,7 @@ public class UriParseTreeVisitor extends UriParserBaseVisitor<Object> {
         for (String item : lastKeyPredicates) {
           String property = partner.getReferencingPropertyName(item);
           if (property != null) {
-            list.add(new UriParameterImpl().setName(item).setRefencedProperty(property));
+            list.add(new UriParameterImpl().setName(item).setReferencedProperty(property));
           } else {
             if (missedKey == null) {
               missedKey = item;
@@ -1796,7 +1802,7 @@ public class UriParseTreeVisitor extends UriParserBaseVisitor<Object> {
             String property = partner.getReferencingPropertyName(key);
             if (property != null) {
               // store the key name as referenced property
-              list.add(0, new UriParameterImpl().setName(key).setRefencedProperty(property));
+              list.add(0, new UriParameterImpl().setName(key).setReferencedProperty(property));
             }
           }
         }
@@ -1994,8 +2000,9 @@ public class UriParseTreeVisitor extends UriParserBaseVisitor<Object> {
   @Override
   public Object visitDecimalLiteral(final DecimalLiteralContext ctx) {
     final EdmType type = EdmPrimitiveTypeFactory.getInstance(
-        ctx.getText().contains("e") || ctx.getText().contains("E") ? EdmPrimitiveTypeKind.Double
-            : EdmPrimitiveTypeKind.Decimal);
+        ctx.getText().contains("e") || ctx.getText().contains("E") ?
+            EdmPrimitiveTypeKind.Double :
+            EdmPrimitiveTypeKind.Decimal);
 
     return new LiteralImpl().setText(ctx.getText()).setType(type);
   }
@@ -2216,7 +2223,9 @@ public class UriParseTreeVisitor extends UriParserBaseVisitor<Object> {
       // contextSelectItem.addSegment(newSegment);
       if (element instanceof EdmProperty) {
         EdmProperty property = (EdmProperty) element;
-        if (property.isPrimitive()) {
+        if (property.isPrimitive()
+            || property.getType().getKind() == EdmTypeKind.ENUM
+            || property.getType().getKind() == EdmTypeKind.DEFINITION) {
 
           UriResourcePrimitivePropertyImpl simple = new UriResourcePrimitivePropertyImpl();
           simple.setProperty(property);
@@ -2398,20 +2407,16 @@ public class UriParseTreeVisitor extends UriParserBaseVisitor<Object> {
 
   @Override
   public Object visitSkip(final SkipContext ctx) {
-    SkipOptionImpl skiptoken = new SkipOptionImpl();
-
-    String text = ctx.children.get(2).getText();
-
-    return skiptoken.setValue(Integer.parseInt(text)).setText(text);
+    final String text = ctx.children.get(2).getText();
+    return new SkipOptionImpl()
+        .setValue(Integer.parseInt(text))
+        .setText(text);
   }
 
   @Override
   public Object visitSkiptoken(final SkiptokenContext ctx) {
-    SkipTokenOptionImpl skiptoken = new SkipTokenOptionImpl();
-
-    String text = ctx.children.get(2).getText();
-
-    return skiptoken.setValue(text).setText(text);
+    final String text = ctx.children.get(2).getText();
+    return new SkipTokenOptionImpl().setValue(text).setText(text);
   }
 
   @Override
@@ -2446,11 +2451,10 @@ public class UriParseTreeVisitor extends UriParserBaseVisitor<Object> {
 
   @Override
   public Object visitTop(final TopContext ctx) {
-    TopOptionImpl top = new TopOptionImpl();
-
-    String text = ctx.children.get(2).getText();
-
-    return top.setValue(Integer.parseInt(text)).setText(text);
+    final String text = ctx.children.get(2).getText();
+    return new TopOptionImpl()
+        .setValue(Integer.parseInt(text))
+        .setText(text);
   }
 
   @Override

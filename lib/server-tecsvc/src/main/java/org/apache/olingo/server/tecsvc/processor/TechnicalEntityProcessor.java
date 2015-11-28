@@ -67,6 +67,7 @@ import org.apache.olingo.server.tecsvc.processor.queryoptions.ExpandSystemQueryO
 import org.apache.olingo.server.tecsvc.processor.queryoptions.options.CountHandler;
 import org.apache.olingo.server.tecsvc.processor.queryoptions.options.FilterHandler;
 import org.apache.olingo.server.tecsvc.processor.queryoptions.options.OrderByHandler;
+import org.apache.olingo.server.tecsvc.processor.queryoptions.options.SearchHandler;
 import org.apache.olingo.server.tecsvc.processor.queryoptions.options.ServerSidePagingHandler;
 import org.apache.olingo.server.tecsvc.processor.queryoptions.options.SkipHandler;
 import org.apache.olingo.server.tecsvc.processor.queryoptions.options.TopHandler;
@@ -470,17 +471,17 @@ public class TechnicalEntityProcessor extends TechnicalProcessor
         edmEntitySet.getEntityType();
 
     EntityCollection entitySetInitial = readEntityCollection(uriInfo);
-
     if (entitySetInitial == null) {
       entitySetInitial = new EntityCollection();
     }
 
     // Modifying the original entitySet means modifying the "database", so we have to make a shallow
-    // copy of the entity set (new EntitySet, but exactly the same data)
+    // copy of the entity set (new EntitySet, but exactly the same data).
     EntityCollection entitySet = new EntityCollection();
     entitySet.getEntities().addAll(entitySetInitial.getEntities());
 
-    // Apply system query options
+    // Apply system query options.
+    SearchHandler.applySearchSystemQueryOption(uriInfo.getSearchOption(), entitySet);
     FilterHandler.applyFilterSystemQuery(uriInfo.getFilterOption(), entitySet, uriInfo, serviceMetadata.getEdm());
     CountHandler.applyCountSystemQueryOption(uriInfo.getCountOption(), entitySet);
     OrderByHandler.applyOrderByOption(uriInfo.getOrderByOption(), entitySet, uriInfo, serviceMetadata.getEdm());

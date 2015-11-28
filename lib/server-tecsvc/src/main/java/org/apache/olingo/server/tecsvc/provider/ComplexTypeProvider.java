@@ -113,7 +113,7 @@ public class ComplexTypeProvider {
           .setProperties(Arrays.asList(
               new CsdlProperty()
                   .setName("AdditionalPropString")
-                  .setType(new FullQualifiedName("Edm", "String"))));
+                  .setType(PropertyProvider.nameString)));
 
     } else if (complexTypeName.equals(nameCTTwoBase)) {
       return new CsdlComplexType()
@@ -155,10 +155,11 @@ public class ComplexTypeProvider {
           .setName("CTNavCont")
           .setProperties(new ArrayList<CsdlProperty>())
           .setNavigationProperties(Arrays.asList(
-              PropertyProvider.collectionNavPropertyETKeyNavContMany_CT_ETKeyNav,
-              PropertyProvider.navPropertyETKeyNavContOne_CT_ETeyNav,
-              PropertyProvider.collectionNavPropertyETTwoKeyNavContMany_CT_ETKeyNav,
-              PropertyProvider.navPropertyETTwoKeyNavContOne_CT_ETKeyNav));
+              PropertyProvider.navPropertyETKeyNavOne_CT_ETeyNav,
+              PropertyProvider.collectionNavPropertyETKeyNavMany_CT_ETKeyNav,
+              PropertyProvider.navPropertyETTwoKeyNavOne_CT_ETTwoKeyNav,
+              PropertyProvider.collectionNavPropertyETTwoKeyNavMany_CT_ETTwoKeyNav
+              ));
 
     } else if (complexTypeName.equals(nameCTBasePrimCompNav)) {
       return new CsdlComplexType()
